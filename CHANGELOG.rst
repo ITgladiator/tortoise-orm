@@ -3,6 +3,10 @@
 Changelog
 =========
 
+0.12.1
+------
+- Fixed IntegrityError on concurrent call for ``get_or_create`` with unique constraint
+
 0.12.0
 ------
 * Tortoise ORM now supports non-autonumber primary keys.

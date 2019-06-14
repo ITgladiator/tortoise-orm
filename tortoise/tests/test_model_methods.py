@@ -1,9 +1,11 @@
+import asyncio
+
 from tortoise.contrib import test
 from tortoise.exceptions import DoesNotExist, MultipleObjectsReturned, OperationalError
-from tortoise.tests.testmodels import NoID, Tournament
+from tortoise.tests.testmodels import NoID, Tournament, UniqueTournament
 
 
-class TestModelMethods(test.TestCase):
+class TestModelMethods(test.IsolatedTestCase):
     async def setUp(self):
         self.mdl = await Tournament.create(name="Test")
         self.mdl2 = Tournament(name="Test")
@@ -57,6 +59,15 @@ class TestModelMethods(test.TestCase):
         self.assertNotEqual(self.mdl, mdl)
         mdl2 = await self.cls.get(name="Test2")
         self.assertEqual(mdl, mdl2)
+
+    async def test_get_or_create_concurrent(self):
+        tasks = [
+            UniqueTournament.get_or_create(name="Test"),
+            UniqueTournament.get_or_create(name="Test"),
+        ]
+        res1, res2 = await asyncio.gather(*tasks)
+        self.assertNotEqual(res1[1], res2[1])
+        self.assertEqual(res2[0].pk, res2[0].pk)
 
     async def test_first(self):
         mdl = await self.cls.first()
