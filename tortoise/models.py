@@ -192,6 +192,12 @@ class ModelMeta(type):
         meta_class = attrs.get("Meta", type("Meta", (), {}))
         pk_attr = "id"
 
+        # ---------- 自定义：继承父类的字段 -------------
+        for base in bases:
+            if hasattr(base, '_meta') and hasattr(base._meta, 'fields_map'):
+                attrs.update(base._meta.fields_map)
+        # ----------- end -----------------
+
         if name != "Model":
             custom_pk_present = False
             for key, value in attrs.items():
